@@ -19,25 +19,8 @@
         }
 
         var data = response.getDataTable();
-
-        // Kolom G ada di index ke-4 (urutan: B=0, C=1, D=2, E=3, G=4, H=5)
-        for (var i = 0; i < data.getNumberOfRows(); i++) {
-          var url = data.getValue(i, 4);
-          if (url) {
-            data.setValue(i, 4, '<a href="' + url + '" target="_blank">' + url + '</a>');
-          }
-        }
-
-        var formatter = new google.visualization.HtmlFormatter();
-        formatter.format(data, 4); // Format kolom G agar bisa HTML (link)
-
         var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {
-          showRowNumber: true,
-          allowHtml: true, // Penting agar link bisa tampil
-          width: '100%',
-          height: 'auto'
-        });
+        table.draw(data, {showRowNumber: true, width: '100%', height: 'auto'});
       });
     }
   </script>
