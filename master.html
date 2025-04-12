@@ -2,47 +2,105 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Master Data</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Peserta Qurban</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script type="text/javascript">
-    google.charts.load('current', { 'packages': ['table'] });
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-top: 30px;
+      border-radius: 8px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    @media (max-width: 600px) {
+      h2 {
+        font-size: 20px;
+      }
+
+      .container {
+        padding: 15px;
+      }
+    }
+
+    a.link-button {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a.link-button:hover {
+      text-decoration: underline;
+    }
+  </style>
+
+  <script>
+    google.charts.load('current', {'packages':['table']});
     google.charts.setOnLoadCallback(drawTable);
 
     function drawTable() {
       var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'Sheet1'; // Ganti jika kamu pakai sheet lain
-      var queryString = encodeURIComponent("SELECT A, B, C, D, E, F, G");
-
+      var sheetName = 'DATABASE';
+      var queryString = encodeURIComponent("SELECT A, B, C, D, E, F, G, H");
       var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
-      var query = new google.visualization.Query(dataSourceUrl);
 
-      query.send(function (response) {
+      var query = new google.visualization.Query(dataSourceUrl);
+      query.send(function(response) {
         if (response.isError()) {
-          document.getElementById("table_div").innerHTML = "Gagal memuat data.";
+          document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
           return;
         }
 
         var data = response.getDataTable();
 
-        // Format kolom G (index 6) sebagai hyperlink
+        // Ubah kolom G menjadi link
+        var colIndex = 6; // Kolom G
         for (var i = 0; i < data.getNumberOfRows(); i++) {
-          var url = data.getValue(i, 6);
-          if (url) {
-            data.setValue(i, 6, `<a href="${url}" target="_blank">${url}</a>`);
+          var link = data.getValue(i, colIndex);
+          if (link) {
+            var htmlLink = `<a class="link-button" href="${link}" target="_blank">Lihat Bukti</a>`;
+            data.setValue(i, colIndex, htmlLink);
           }
         }
 
-        var formatter = new google.visualization.HtmlFormatter();
-        formatter.format(data, 6); // Format kolom ke-6 (kolom G)
-
         var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, { allowHtml: true, showRowNumber: true, width: '100%', height: 'auto' });
+        table.draw(data, {
+          showRowNumber: true,
+          allowHtml: true,
+          width: '100%',
+          height: 'auto'
+        });
       });
     }
   </script>
 </head>
 <body>
-  <h2>Master Data</h2>
-  <div id="table_div">Memuat data...</div>
+  <div class="container">
+    <h2>DAFTAR PESERTA TABUNGAN QURBAN</h2>
+    <div class="table-container">
+      <div id="table_div">Memuat data...</div>
+    </div>
+  </div>
 </body>
 </html>
