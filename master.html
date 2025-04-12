@@ -60,33 +60,47 @@
     google.charts.setOnLoadCallback(drawTable);
 
     function drawTable() {
-      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'DATABASE';
-      var queryString = encodeURIComponent("SELECT B, C, D, E, G, H");
-      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
+      const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+      const sheetName = 'DATABASE';
+      const queryString = encodeURIComponent("SELECT B, C, D, E, G, H"); // Hapus kolom A & F
+      const dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
-      var query = new google.visualization.Query(dataSourceUrl);
+      const query = new google.visualization.Query(dataSourceUrl);
       query.send(function(response) {
         if (response.isError()) {
           document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
           return;
         }
 
-        var data = response.getDataTable();
+        let originalData = response.getDataTable();
+        let formattedData = new google.visualization.DataTable();
 
-        // Ubah kolom G menjadi link
-        var colIndex = 6; // Kolom G
-        for (var i = 0; i < data.getNumberOfRows(); i++) {
-          var link = data.getValue(i, colIndex);
-          if (link) {
-            var htmlLink = `<a class="link-button" href="${link}" target="_blank">Lihat Bukti</a>`;
-            data.setValue(i, colIndex, htmlLink);
-          }
+        // Tambahkan kolom sequence number
+        formattedData.addColumn('number', 'NO');
+        for (let i = 0; i < originalData.getNumberOfColumns(); i++) {
+          formattedData.addColumn(originalData.getColumnType(i), originalData.getColumnLabel(i));
         }
 
-        var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {
-          showRowNumber: true,
+        // Tambahkan baris dan isi sequence number
+        for (let i = 0; i < originalData.getNumberOfRows(); i++) {
+          let row = [i + 1]; // Sequence number
+          for (let j = 0; j < originalData.getNumberOfColumns(); j++) {
+            row.push(originalData.getValue(i, j));
+          }
+
+          // Konversi kolom G (BUKTI TRANSFER) menjadi link
+          let buktiIndex = 5; // kolom ke-5 di data asli (G)
+          let buktiLink = row[buktiIndex + 1];
+          if (buktiLink) {
+            row[buktiIndex + 1] = `<a class="link-button" href="${buktiLink}" target="_blank">Lihat Bukti</a>`;
+          }
+
+          formattedData.addRow(row);
+        }
+
+        const table = new google.visualization.Table(document.getElementById('table_div'));
+        table.draw(formattedData, {
+          showRowNumber: false,
           allowHtml: true,
           width: '100%',
           height: 'auto'
