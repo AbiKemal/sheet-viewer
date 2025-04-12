@@ -1,59 +1,73 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Data Peserta Qurban</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Master Tabungan Qurban</title>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: auto;
+      font-family: Arial, sans-serif;
       padding: 20px;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-top: 30px;
-      border-radius: 8px;
+      margin: 0;
+      background-color: #f5f5f5;
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 30px;
-      color: #333;
+      margin-bottom: 20px;
     }
 
-    .table-container {
+    table {
+      width: 100%;
+      border-collapse: collapse;
       overflow-x: auto;
     }
 
-    @media (max-width: 600px) {
-      h2 {
-        font-size: 20px;
-      }
-
-      .container {
-        padding: 15px;
-      }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border: 1px solid #ddd;
+      font-size: 14px;
     }
 
-    a.link-button {
-      color: #007bff;
-      text-decoration: none;
-      font-weight: 500;
+    th {
+      background-color: #007BFF;
+      color: white;
     }
 
-    a.link-button:hover {
-      text-decoration: underline;
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    @media screen and (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        background-color: #007BFF;
+      }
+
+      td {
+        padding-left: 50%;
+        position: relative;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        font-weight: bold;
+      }
     }
   </style>
+</head>
+<body>
+  <h2>Data Tabungan Qurban</h2>
+  <div id="table_div">Memuat data...</div>
 
   <script>
     google.charts.load('current', {'packages':['table']});
@@ -62,66 +76,51 @@
     function drawTable() {
       const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
       const sheetName = 'DATABASE';
-      const queryString = encodeURIComponent("SELECT B, C, D, E, G, H"); // Ambil kolom yang dibutuhkan
+      const queryString = encodeURIComponent("SELECT B, C, D, E, G, H");
       const dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
       const query = new google.visualization.Query(dataSourceUrl);
       query.send(function(response) {
         if (response.isError()) {
-          document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
+          document.getElementById("table_div").innerHTML =
+            'Gagal memuat data: ' + response.getMessage();
           return;
         }
 
-        const originalData = response.getDataTable();
-        const formattedData = new google.visualization.DataTable();
+        const data = response.getDataTable();
+        const newData = new google.visualization.DataTable();
 
-        // Tambahkan kolom sequence number
-        formattedData.addColumn('number', 'NO');
-        formattedData.addColumn('string', 'NAMA');
-        formattedData.addColumn('string', 'BULAN');
-        formattedData.addColumn('number', 'JUMLAH');
-        formattedData.addColumn('string', 'TGL INPUT');
-        formattedData.addColumn('string', 'BUKTI TRANSFER');
-        formattedData.addColumn('string', 'KETERANGAN');
+        newData.addColumn('number', 'NO');
+        newData.addColumn('string', 'NAMA');
+        newData.addColumn('string', 'BULAN');
+        newData.addColumn('number', 'JUMLAH');
+        newData.addColumn('string', 'TGL INPUT');
+        newData.addColumn('string', 'BUKTI TRANSFER');
+        newData.addColumn('string', 'KETERANGAN');
 
-        for (let i = 0; i < originalData.getNumberOfRows(); i++) {
-          const nama = originalData.getValue(i, 0);
-          const bulan = originalData.getValue(i, 1);
-          const jumlah = originalData.getValue(i, 2);
-          const tglInput = originalData.getValue(i, 3);
-          const buktiUrl = originalData.getValue(i, 4);
-          const keterangan = originalData.getValue(i, 5);
+        for (let i = 0; i < data.getNumberOfRows(); i++) {
+          const no = i + 1;
+          const nama = data.getValue(i, 0);
+          const bulan = data.getValue(i, 1);
+          const jumlah = data.getValue(i, 2);
+          const tgl = data.getFormattedValue(i, 3);
+          const buktiLink = data.getValue(i, 4);
+          const keterangan = data.getValue(i, 5);
 
-          const linkHTML = buktiUrl ? `<a class="link-button" href="${buktiUrl}" target="_blank">Lihat Bukti</a>` : '';
+          const buktiHTML = `<a href="${buktiLink}" target="_blank">Lihat Bukti</a>`;
 
-          formattedData.addRow([
-            i + 1, // NO
-            nama,
-            bulan,
-            {v: jumlah, f: new Intl.NumberFormat('id-ID').format(jumlah)},
-            tglInput,
-            linkHTML,
-            keterangan
-          ]);
+          newData.addRow([no, nama, bulan, jumlah, tgl, buktiHTML, keterangan]);
         }
 
         const table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(formattedData, {
+        table.draw(newData, {
           showRowNumber: false,
-          allowHtml: true,
           width: '100%',
-          height: 'auto'
+          height: 'auto',
+          allowHtml: true
         });
       });
     }
   </script>
-</head>
-<body>
-  <div class="container">
-    <h2>DAFTAR PESERTA TABUNGAN QURBAN</h2>
-    <div class="table-container">
-      <div id="table_div">Memuat data...</div>
-    </div>
-  </div>
 </body>
 </html>
