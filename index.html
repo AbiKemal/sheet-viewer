@@ -10,7 +10,7 @@
     function loadPesertaList() {
       var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
       var sheetName = 'PESERTA_QURBAN';
-      var queryString = encodeURIComponent("SELECT A, B"); // Ganti kolom sesuai kebutuhan
+      var queryString = encodeURIComponent("SELECT A, B");
 
       var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
@@ -24,7 +24,8 @@
         var data = response.getDataTable();
         var html = '<ul>';
         for (var i = 0; i < data.getNumberOfRows(); i++) {
-          html += `<li>${data.getValue(i, 0)} - ${data.getValue(i, 1)}</li>`;
+          var nama = data.getValue(i, 1); // Kolom B
+          html += `<li><a href="view.html?nama=${encodeURIComponent(nama)}">${data.getValue(i, 0)} - ${nama}</a></li>`;
         }
         html += '</ul>';
         document.getElementById("peserta_list").innerHTML = html;
