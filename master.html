@@ -8,19 +8,53 @@
     google.charts.setOnLoadCallback(drawTable);
 
     function drawTable() {
-      var queryString = encodeURIComponent("SELECT B, C, D, E, G, H");
-      var dataSourceUrl = 'https://docs.google.com/spreadsheets/d/1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA/gviz/tq?sheet=Sheet1&headers=1&tq=' + queryString;
+      const queryString = encodeURIComponent("SELECT B, C, D, E, G, H");
+      const dataSourceUrl = 'https://docs.google.com/spreadsheets/d/1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA/gviz/tq?sheet=Sheet1&headers=1&tq=' + queryString;
 
-      var query = new google.visualization.Query(dataSourceUrl);
+      const query = new google.visualization.Query(dataSourceUrl);
       query.send(function(response) {
         if (response.isError()) {
           alert('Error: ' + response.getMessage() + ' ' + response.getDetailedMessage());
           return;
         }
 
-        var data = response.getDataTable();
-        var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {showRowNumber: true, width: '100%', height: 'auto'});
+        const originalData = response.getDataTable();
+        const filteredData = new google.visualization.DataTable();
+
+        // Salin struktur kolom dari originalData
+        for (let i = 0; i < originalData.getNumberOfColumns(); i++) {
+          filteredData.addColumn(originalData.getColumnType(i), originalData.getColumnLabel(i));
+        }
+
+        // Tambahkan hanya baris yang tidak kosong semua
+        for (let i = 0; i < originalData.getNumberOfRows(); i++) {
+          const row = [];
+          let isEmpty = true;
+
+          for (let j = 0; j < originalData.getNumberOfColumns(); j++) {
+            const val = originalData.getValue(i, j);
+            row.push(val);
+            if (val !== null && val !== '') {
+              isEmpty = false;
+            }
+          }
+
+          if (!isEmpty) {
+            // Format kolom G (index 4) sebagai link
+            if (row[4]) {
+              row[4] = `<a href="${row[4]}" target="_blank">${row[4]}</a>`;
+            }
+            filteredData.addRow(row);
+          }
+        }
+
+        const table = new google.visualization.Table(document.getElementById('table_div'));
+        table.draw(filteredData, {
+          showRowNumber: true,
+          allowHtml: true,
+          width: '100%',
+          height: 'auto'
+        });
       });
     }
   </script>
