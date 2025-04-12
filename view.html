@@ -96,34 +96,44 @@
         </div>
       `;
 
-      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'DATABASE';
-      var queryString = encodeURIComponent(`SELECT A, B, C, D, E, H WHERE B = '${nama}'`);
-      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
+      const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+      const sheetName = 'DATABASE';
+      const queryString = encodeURIComponent(`SELECT C, D, E WHERE B = '${nama}'`);
+      const dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
-      var query = new google.visualization.Query(dataSourceUrl);
+      const query = new google.visualization.Query(dataSourceUrl);
       query.send(function(response) {
         if (response.isError()) {
           document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
           return;
         }
 
-        var data = response.getDataTable();
-        var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {showRowNumber: true, width: '100%', height: 'auto'});
+        const rawData = response.getDataTable();
+        const numRows = rawData.getNumberOfRows();
 
-        // Menghitung total tabungan dari kolom ke-4 (kolom D)
-        let totalTabungan = 0;
-        for (let i = 0; i < data.getNumberOfRows(); i++) {
-          let val = data.getValue(i, 3); // Kolom D (jumlah tabungan)
-          if (typeof val === 'number') {
-            totalTabungan += val;
+        // Buat tabel baru dengan kolom: NO, BULAN, JUMLAH, TGL INPUT
+        const formattedData = new google.visualization.DataTable();
+        formattedData.addColumn('number', 'NO');
+        formattedData.addColumn('string', 'BULAN');      // C
+        formattedData.addColumn('number', 'JUMLAH');     // D
+        formattedData.addColumn('string', 'TGL INPUT');  // E
+
+        let total = 0;
+        for (let i = 0; i < numRows; i++) {
+          const bulan = rawData.getValue(i, 0);
+          const jumlah = rawData.getValue(i, 1);
+          const tgl = rawData.getFormattedValue(i, 2);
+          if (typeof jumlah === 'number') {
+            total += jumlah;
           }
+          formattedData.addRow([i + 1, bulan, jumlah, tgl]);
         }
 
-        // Menampilkan total tabungan
+        const table = new google.visualization.Table(document.getElementById('table_div'));
+        table.draw(formattedData, { showRowNumber: false, width: '100%', height: 'auto' });
+
         document.getElementById("total_tabungan").innerHTML =
-          `TOTAL TABUNGAN: Rp ${totalTabungan.toLocaleString('id-ID', {minimumFractionDigits: 2})}`;
+          `TOTAL TABUNGAN: Rp ${total.toLocaleString('id-ID', { minimumFractionDigits: 2 })}`;
       });
     }
   </script>
