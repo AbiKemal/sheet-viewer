@@ -27,7 +27,7 @@
 
     table {
       width: 100%;
-      min-width: 600px; /* agar tetap terlihat proporsional di layar kecil */
+      min-width: 600px;
       border-collapse: collapse;
     }
 
@@ -68,7 +68,7 @@
       const namaPeserta = urlParams.get('nama');
 
       const sheetUrl = `https://docs.google.com/spreadsheets/d/1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA/gviz/tq?sheet=HABIB&tq=` + 
-        encodeURIComponent(`SELECT A, B, C, D WHERE B = '${namaPeserta}'`);
+        encodeURIComponent(`SELECT B, C, D, E WHERE B = '${namaPeserta}'`);
 
       const query = new google.visualization.Query(sheetUrl);
       query.send(function(response) {
@@ -80,25 +80,27 @@
         const data = response.getDataTable();
         const container = document.getElementById('tabungan_detail');
 
-        let html = '<div class="table-container"><table><thead><tr><th>#</th><th>Bulan</th><th>Tanggal Pembayaran</th><th>Jumlah Tabungan</th></tr></thead><tbody>';
+        let html = '<div class="table-container"><table><thead><tr><th>#</th><th>Nama</th><th>Bulan</th><th>Tanggal</th><th>Jumlah</th></tr></thead><tbody>';
         let totalTabungan = 0;
 
         for (let i = 0; i < data.getNumberOfRows(); i++) {
+          const nama = data.getValue(i, 0);
           const bulan = data.getValue(i, 1);
-          const tglPembayaran = data.getValue(i, 2);
-          const jumlahTabungan = parseFloat(data.getValue(i, 3)) || 0;
-          totalTabungan += jumlahTabungan;
+          const tanggal = data.getValue(i, 2);
+          const jumlah = parseFloat(data.getValue(i, 3)) || 0;
+          totalTabungan += jumlah;
 
           html += `<tr>
             <td>${i + 1}</td>
+            <td>${nama}</td>
             <td>${bulan}</td>
-            <td>${tglPembayaran}</td>
-            <td>${jumlahTabungan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+            <td>${tanggal}</td>
+            <td>${jumlah.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
           </tr>`;
         }
 
         html += `<tr class="total-row">
-          <td colspan="3" style="text-align: right;">Total Tabungan:</td>
+          <td colspan="4" style="text-align: right;">Total Tabungan:</td>
           <td>${totalTabungan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
         </tr>`;
 
