@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>Master Tabungan Qurban</title>
@@ -16,7 +16,6 @@
     h2 {
       text-align: center;
       margin-bottom: 20px;
-      color: #333;
     }
 
     table {
@@ -34,30 +33,11 @@
 
     th {
       background-color: #e8f1ff;
-      color: #333;
+      color: #007BFF;
     }
 
     tr:nth-child(even) {
       background-color: #f9f9f9;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      overflow-x: auto;
-    }
-
-    #filterDiv {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    #filterDiv input {
-      padding: 8px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 300px;
     }
 
     #total_div {
@@ -66,20 +46,6 @@
       font-size: 16px;
       text-align: right;
       color: #333;
-    }
-
-    .button {
-      padding: 10px 15px;
-      margin-top: 20px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .button:hover {
-      background-color: #0056b3;
     }
 
     @media screen and (max-width: 600px) {
@@ -113,20 +79,9 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Data Tabungan Qurban</h2>
-
-    <!-- Filter Nama -->
-    <div id="filterDiv">
-      <input type="text" id="filterNama" placeholder="Filter Nama Peserta..." onkeyup="filterData()">
-    </div>
-
-    <div id="table_div">Memuat data...</div>
-    <div id="total_div"></div>
-
-    <!-- Export Button -->
-    <button class="button" onclick="exportToExcel()">Ekspor ke Excel</button>
-  </div>
+  <h2>Data Tabungan Qurban</h2>
+  <div id="table_div">Memuat data...</div>
+  <div id="total_div"></div>
 
   <script>
     google.charts.load('current', {'packages':['table']});
@@ -184,35 +139,6 @@
 
         document.getElementById('total_div').innerHTML = `TOTAL TABUNGAN: Rp ${totalJumlah.toLocaleString()}`;
       });
-    }
-
-    function filterData() {
-      const input = document.getElementById('filterNama').value.toLowerCase();
-      const rows = document.querySelectorAll('#table_div .google-visualization-table-tr');
-
-      rows.forEach(row => {
-        const nameCell = row.querySelector('td:nth-child(2)');
-        if (nameCell) {
-          const name = nameCell.textContent || nameCell.innerText;
-          if (name.toLowerCase().includes(input)) {
-            row.style.display = '';
-          } else {
-            row.style.display = 'none';
-          }
-        }
-      });
-    }
-
-    function exportToExcel() {
-      const table = document.querySelector('#table_div table');
-      const tableHTML = table.outerHTML.replace(/<a[^>]*>/g, '').replace(/<\/a>/g, ''); // Remove <a> links
-      const blob = new Blob(['\uFEFF', tableHTML], {
-        type: 'application/vnd.ms-excel'
-      });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'tabungan_qurban.xlsx';
-      link.click();
     }
   </script>
 </body>
