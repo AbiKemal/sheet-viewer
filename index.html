@@ -1,5 +1,47 @@
-<nav>
-  <a href="index.html">Beranda</a> |
-  <a href="view.html">Data HABIB</a> |
-  <a href="master.html">Master Data</a>
-</nav>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Beranda - Qurban</title>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+    google.charts.load('current', {'packages':['table']});
+    google.charts.setOnLoadCallback(loadPesertaList);
+
+    function loadPesertaList() {
+      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+      var sheetName = 'PESERTA_QURBAN';
+      var queryString = encodeURIComponent("SELECT A, B"); // Ganti kolom sesuai kebutuhan
+
+      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
+
+      var query = new google.visualization.Query(dataSourceUrl);
+      query.send(function(response) {
+        if (response.isError()) {
+          document.getElementById("peserta_list").innerHTML = "Gagal memuat data peserta.";
+          return;
+        }
+
+        var data = response.getDataTable();
+        var html = '<ul>';
+        for (var i = 0; i < data.getNumberOfRows(); i++) {
+          html += `<li>${data.getValue(i, 0)} - ${data.getValue(i, 1)}</li>`;
+        }
+        html += '</ul>';
+        document.getElementById("peserta_list").innerHTML = html;
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>Selamat Datang di Halaman Qurban</h1>
+  
+  <nav>
+    <a href="index.html">Beranda</a> |
+    <a href="view.html">Data HABIB</a> |
+    <a href="master.html">Master Data</a>
+  </nav>
+
+  <h2>Daftar Peserta Qurban</h2>
+  <div id="peserta_list">Memuat data...</div>
+</body>
+</html>
