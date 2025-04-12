@@ -54,22 +54,21 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
     }
 
     th, td {
-      border: 1px solid #ddd;
       padding: 10px;
+      border: 1px solid #ddd;
       text-align: left;
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: #f0f0f0;
     }
 
     .total-row {
       font-weight: bold;
-      background-color: #eaeaea;
+      background-color: #f9f9f9;
     }
 
     @media (max-width: 600px) {
@@ -77,6 +76,7 @@
         flex-direction: column;
         text-align: left;
       }
+
       .info-right {
         text-align: left;
       }
@@ -114,34 +114,53 @@
         </div>
       `;
 
-      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'Sheet1';
-      var queryString = encodeURIComponent(`SELECT C, D, E WHERE B = '${nama}'`);
-      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
+      const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+      const sheetName = 'Sheet1';
+      const queryString = encodeURIComponent(`SELECT C, D, E WHERE B = '${nama}'`);
+      const dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
-      var query = new google.visualization.Query(dataSourceUrl);
+      const query = new google.visualization.Query(dataSourceUrl);
       query.send(function(response) {
         if (response.isError()) {
           document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
           return;
         }
 
-        var data = response.getDataTable();
-        var html = '<table><thead><tr><th>Bulan</th><th>Tanggal</th><th>Jumlah</th></tr></thead><tbody>';
-        var total = 0;
+        const data = response.getDataTable();
+        let html = '<table><thead><tr><th>Bulan</th><th>Tanggal</th><th>Jumlah</th></tr></thead><tbody>';
+        let total = 0;
 
-        for (var i = 0; i < data.getNumberOfRows(); i++) {
-          var bulan = data.getValue(i, 0) || '';
-          var tanggal = data.getValue(i, 1) || '';
-          var jumlah = parseFloat(data.getValue(i, 2)) || 0;
+        for (let i = 0; i < data.getNumberOfRows(); i++) {
+          const bulan = data.getValue(i, 0);
+          const tanggal = data.getValue(i, 1);
+          const jumlah = parseFloat(data.getValue(i, 2)) || 0;
           total += jumlah;
 
           html += `<tr>
             <td>${bulan}</td>
             <td>${tanggal}</td>
-            <td>${jumlah}</td>
+            <td>${jumlah.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
           </tr>`;
         }
 
         html += `<tr class="total-row">
-          <td colspan="2
+          <td colspan="2" style="text-align:right;">Jumlah Tabungan</td>
+          <td>${total.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+        </tr>`;
+
+        html += '</tbody></table>';
+
+        document.getElementById('table_div').innerHTML = html;
+      });
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div id="judul"></div>
+    <div class="table-container">
+      <div id="table_div">Memuat data...</div>
+    </div>
+  </div>
+</body>
+</html>
