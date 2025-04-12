@@ -82,11 +82,10 @@
         const data = response.getDataTable();
         const container = document.getElementById('tabungan_detail');
 
-        let html = '<table><thead><tr><th>No</th><th>Bulan</th><th>Tanggal Pembayaran</th><th>Jumlah Tabungan</th></tr></thead><tbody>';
+        let html = '<table><thead><tr><th>#</th><th>Bulan</th><th>Tanggal Pembayaran</th><th>Jumlah Tabungan</th></tr></thead><tbody>';
         let totalTabungan = 0;
 
         for (let i = 0; i < data.getNumberOfRows(); i++) {
-          const no = data.getValue(i, 0);
           const bulan = data.getValue(i, 1);
           const tglPembayaran = data.getValue(i, 2);
           const jumlahTabungan = parseFloat(data.getValue(i, 3)) || 0;
@@ -94,7 +93,7 @@
           totalTabungan += jumlahTabungan;
 
           html += `<tr>
-            <td data-label="No">${no}</td>
+            <td data-label="#">${i + 1}</td>
             <td data-label="Bulan">${bulan}</td>
             <td data-label="Tanggal Pembayaran">${tglPembayaran}</td>
             <td data-label="Jumlah Tabungan">${jumlahTabungan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
