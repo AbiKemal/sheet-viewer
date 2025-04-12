@@ -62,7 +62,7 @@
     function drawTable() {
       const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
       const sheetName = 'DATABASE';
-      const queryString = encodeURIComponent("SELECT B, C, D, E, G, H"); // Hapus kolom A & F
+      const queryString = encodeURIComponent("SELECT B, C, D, E, G, H"); // Ambil kolom yang dibutuhkan
       const dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
       const query = new google.visualization.Query(dataSourceUrl);
@@ -72,30 +72,37 @@
           return;
         }
 
-        let originalData = response.getDataTable();
-        let formattedData = new google.visualization.DataTable();
+        const originalData = response.getDataTable();
+        const formattedData = new google.visualization.DataTable();
 
         // Tambahkan kolom sequence number
         formattedData.addColumn('number', 'NO');
-        for (let i = 0; i < originalData.getNumberOfColumns(); i++) {
-          formattedData.addColumn(originalData.getColumnType(i), originalData.getColumnLabel(i));
-        }
+        formattedData.addColumn('string', 'NAMA');
+        formattedData.addColumn('string', 'BULAN');
+        formattedData.addColumn('number', 'JUMLAH');
+        formattedData.addColumn('string', 'TGL INPUT');
+        formattedData.addColumn('string', 'BUKTI TRANSFER');
+        formattedData.addColumn('string', 'KETERANGAN');
 
-        // Tambahkan baris dan isi sequence number
         for (let i = 0; i < originalData.getNumberOfRows(); i++) {
-          let row = [i + 1]; // Sequence number
-          for (let j = 0; j < originalData.getNumberOfColumns(); j++) {
-            row.push(originalData.getValue(i, j));
-          }
+          const nama = originalData.getValue(i, 0);
+          const bulan = originalData.getValue(i, 1);
+          const jumlah = originalData.getValue(i, 2);
+          const tglInput = originalData.getValue(i, 3);
+          const buktiUrl = originalData.getValue(i, 4);
+          const keterangan = originalData.getValue(i, 5);
 
-          // Konversi kolom G (BUKTI TRANSFER) menjadi link
-          let buktiIndex = 5; // kolom ke-5 di data asli (G)
-          let buktiLink = row[buktiIndex + 1];
-          if (buktiLink) {
-            row[buktiIndex + 1] = `<a class="link-button" href="${buktiLink}" target="_blank">Lihat Bukti</a>`;
-          }
+          const linkHTML = buktiUrl ? `<a class="link-button" href="${buktiUrl}" target="_blank">Lihat Bukti</a>` : '';
 
-          formattedData.addRow(row);
+          formattedData.addRow([
+            i + 1, // NO
+            nama,
+            bulan,
+            {v: jumlah, f: new Intl.NumberFormat('id-ID').format(jumlah)},
+            tglInput,
+            linkHTML,
+            keterangan
+          ]);
         }
 
         const table = new google.visualization.Table(document.getElementById('table_div'));
