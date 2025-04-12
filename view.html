@@ -19,10 +19,18 @@
         return;
       }
 
-      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'Sheet1'; // Ganti sesuai sheet yang sesuai
-      var queryString = encodeURIComponent(`SELECT C, D, E WHERE B = '${nama}'`);
+      // Update elemen teks dengan nama peserta
+      document.getElementById("judul").innerHTML = `
+        <h2>KARTU TABUNGAN QURBAN TAHUN 2026</h2>
+        <p>Kp.Pasar Senen Desa Ciasihan Kec. Pamijahan</p>
+        <br>
+        <strong>Jumlah Dana Qurban</strong><br><br>
+        <strong>NAMA:</strong> ${nama} &nbsp;&nbsp;&nbsp; <strong>RP 3.000.000</strong>
+      `;
 
+      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+      var sheetName = 'Sheet1'; // Ganti jika sheet bukan 'Sheet1'
+      var queryString = encodeURIComponent(`SELECT C, D, E WHERE B = '${nama}'`);
       var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
       var query = new google.visualization.Query(dataSourceUrl);
@@ -40,7 +48,7 @@
   </script>
 </head>
 <body>
-  <h2>Data Peserta</h2>
+  <div id="judul" style="margin-bottom: 20px; font-family: Arial, sans-serif;"></div>
   <div id="table_div">Memuat data...</div>
 </body>
 </html>
