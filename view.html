@@ -18,17 +18,24 @@
       color: #333;
     }
 
+    .table-container {
+      overflow-x: auto;
+      background-color: white;
+      border-radius: 8px;
+      padding: 0.5em;
+    }
+
     table {
       width: 100%;
+      min-width: 600px; /* agar tetap terlihat proporsional di layar kecil */
       border-collapse: collapse;
-      background: white;
-      margin-top: 20px;
     }
 
     th, td {
       padding: 10px;
       border: 1px solid #ccc;
       text-align: left;
+      white-space: nowrap;
     }
 
     th {
@@ -40,35 +47,28 @@
       background-color: #e0e0e0;
     }
 
-    /* Media query untuk tampilan mobile, memastikan kolom tetap pada posisi yang benar */
     @media screen and (max-width: 600px) {
-      table, thead, tbody, th, td, tr {
-        display: table; /* Pastikan kolom tetap pada posisi tabel yang benar */
-      }
-
-      td {
-        padding: 8px; /* Perkecil padding sedikit untuk mobile */
-      }
-
       th, td {
-        font-size: 14px; /* Menurunkan ukuran font sedikit agar lebih nyaman dilihat pada perangkat mobile */
+        font-size: 14px;
+        padding: 8px;
       }
 
-      /* Jika di mobile, tampilkan data dalam urutan yang lebih compact */
-      .total-row {
-        font-size: 16px; /* Ukuran font total tabungan sedikit lebih besar */
+      h2 {
+        font-size: 18px;
       }
     }
   </style>
+
   <script type="text/javascript">
     google.charts.load('current', {'packages':['table']});
     google.charts.setOnLoadCallback(drawTable);
 
     function drawTable() {
       const urlParams = new URLSearchParams(window.location.search);
-      const namaPeserta = urlParams.get('nama');  // Mendapatkan nama peserta dari URL
+      const namaPeserta = urlParams.get('nama');
 
-      const sheetUrl = `https://docs.google.com/spreadsheets/d/1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA/gviz/tq?sheet=HABIB&tq=` + encodeURIComponent(`SELECT A, B, C, D WHERE B = '${namaPeserta}'`);
+      const sheetUrl = `https://docs.google.com/spreadsheets/d/1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA/gviz/tq?sheet=HABIB&tq=` + 
+        encodeURIComponent(`SELECT A, B, C, D WHERE B = '${namaPeserta}'`);
 
       const query = new google.visualization.Query(sheetUrl);
       query.send(function(response) {
@@ -80,31 +80,29 @@
         const data = response.getDataTable();
         const container = document.getElementById('tabungan_detail');
 
-        let html = '<table><thead><tr><th>#</th><th>Bulan</th><th>Tanggal Pembayaran</th><th>Jumlah Tabungan</th></tr></thead><tbody>';
+        let html = '<div class="table-container"><table><thead><tr><th>#</th><th>Bulan</th><th>Tanggal Pembayaran</th><th>Jumlah Tabungan</th></tr></thead><tbody>';
         let totalTabungan = 0;
 
         for (let i = 0; i < data.getNumberOfRows(); i++) {
           const bulan = data.getValue(i, 1);
           const tglPembayaran = data.getValue(i, 2);
           const jumlahTabungan = parseFloat(data.getValue(i, 3)) || 0;
-
           totalTabungan += jumlahTabungan;
 
           html += `<tr>
-            <td data-label="#">${i + 1}</td>
-            <td data-label="Bulan">${bulan}</td>
-            <td data-label="Tanggal Pembayaran">${tglPembayaran}</td>
-            <td data-label="Jumlah Tabungan">${jumlahTabungan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+            <td>${i + 1}</td>
+            <td>${bulan}</td>
+            <td>${tglPembayaran}</td>
+            <td>${jumlahTabungan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
           </tr>`;
         }
 
-        // Menambahkan total tabungan
         html += `<tr class="total-row">
           <td colspan="3" style="text-align: right;">Total Tabungan:</td>
           <td>${totalTabungan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
         </tr>`;
 
-        html += '</tbody></table>';
+        html += '</tbody></table></div>';
         container.innerHTML = html;
       });
     }
