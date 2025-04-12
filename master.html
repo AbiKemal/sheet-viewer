@@ -8,7 +8,7 @@
     google.charts.setOnLoadCallback(drawTable);
 
     function drawTable() {
-      var queryString = encodeURIComponent("SELECT A, B, C, D");
+      var queryString = encodeURIComponent("SELECT A, B, C, D, E, F, G, H");
       var dataSourceUrl = 'https://docs.google.com/spreadsheets/d/1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA/gviz/tq?sheet=Sheet1&headers=1&tq=' + queryString;
 
       var query = new google.visualization.Query(dataSourceUrl);
