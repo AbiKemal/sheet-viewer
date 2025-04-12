@@ -1,48 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Beranda - Qurban</title>
+  <meta charset="UTF-8">
+  <title>Daftar Peserta Qurban 2026</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1em;
+      margin: 0;
+      background: #f4f4f4;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    @media screen and (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      tr {
+        margin-bottom: 1em;
+      }
+
+      td {
+        padding-left: 50%;
+        position: relative;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        font-weight: bold;
+      }
+    }
+  </style>
   <script type="text/javascript">
     google.charts.load('current', {'packages':['table']});
-    google.charts.setOnLoadCallback(loadPesertaList);
+    google.charts.setOnLoadCallback(drawTable);
 
-    function loadPesertaList() {
-      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'PESERTA_QURBAN';
-      var queryString = encodeURIComponent("SELECT A, B");
+    function drawTable() {
+      const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSIL-vfdykJohzL8AEAiEiV5ioUL1-14kRKyruxhQsR_zejL-cJ-is7KQT0iYkiuZzZphSSLxXSBnbD/gviz/tq?sheet=PESERTA_QURBAN&tq=' + encodeURIComponent("SELECT A, B, C");
 
-      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
-
-      var query = new google.visualization.Query(dataSourceUrl);
+      const query = new google.visualization.Query(sheetUrl);
       query.send(function(response) {
         if (response.isError()) {
-          document.getElementById("peserta_list").innerHTML = "Gagal memuat data peserta.";
+          alert('Error mengambil data: ' + response.getMessage());
           return;
         }
 
-        var data = response.getDataTable();
-        var html = '<ul>';
-        for (var i = 0; i < data.getNumberOfRows(); i++) {
-          var nama = data.getValue(i, 1); // Kolom B
-          html += `<li><a href="view.html?nama=${encodeURIComponent(nama)}">${data.getValue(i, 0)} - ${nama}</a></li>`;
+        const data = response.getDataTable();
+        const container = document.getElementById('peserta_list');
+
+        let html = '<table><thead><tr><th>No</th><th>Nama</th><th>No HP</th></tr></thead><tbody>';
+        for (let i = 0; i < data.getNumberOfRows(); i++) {
+          const no = data.getValue(i, 0);
+          const nama = data.getValue(i, 1);
+          const noHp = data.getValue(i, 2);
+
+          // Jika kolom nama tidak kosong
+          if (nama) {
+            html += `<tr>
+              <td data-label="No">${no}</td>
+              <td data-label="Nama"><a href="view.html?nama=${encodeURIComponent(nama)}">${nama}</a></td>
+              <td data-label="No HP">${noHp || ''}</td>
+            </tr>`;
+          }
         }
-        html += '</ul>';
-        document.getElementById("peserta_list").innerHTML = html;
+        html += '</tbody></table>';
+        container.innerHTML = html;
       });
     }
   </script>
 </head>
 <body>
-  <h1>Selamat Datang di Halaman Qurban</h1>
-  
-  <nav>
-    <a href="index.html">Beranda</a> |
-    <a href="view.html">Data HABIB</a> |
-    <a href="master.html">Master Data</a>
-  </nav>
-
-  <h2>Daftar Peserta Qurban</h2>
+  <h2>Daftar Peserta Qurban 2026</h2>
   <div id="peserta_list">Memuat data...</div>
 </body>
 </html>
