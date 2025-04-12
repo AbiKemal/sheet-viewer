@@ -1,177 +1,136 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kartu Tabungan Qurban</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kartu Tabungan Qurban Tahun 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #f6f6f6;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      background-color: #f6f6f6;
+      color: #333;
     }
 
     .container {
-      max-width: 900px;
+      max-width: 800px;
       margin: auto;
+      padding: 20px;
       background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      margin-top: 30px;
+      border-radius: 8px;
     }
 
-    h2, p {
+    .header {
       text-align: center;
-      margin: 4px 0;
+      margin-bottom: 20px;
     }
 
-    .info {
+    .info-row {
       display: flex;
       justify-content: space-between;
-      margin: 20px 0;
+      align-items: flex-start;
       flex-wrap: wrap;
+      margin-bottom: 20px;
+      gap: 10px;
     }
 
-    .info div {
-      flex: 1 1 50%;
+    .info-row div {
+      flex: 1 1 45%;
     }
 
-    .info .right {
+    .info-right {
       text-align: right;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: left;
-    }
-
-    td.right {
-      text-align: right;
-    }
-
-    .total-row td {
-      font-weight: bold;
-      background-color: #f0f0f0;
+    .table-container {
+      overflow-x: auto;
     }
 
     @media (max-width: 600px) {
-      .info {
+      .info-row {
         flex-direction: column;
+        text-align: left;
       }
-      .info .right {
+      .info-right {
         text-align: left;
       }
     }
   </style>
-  <script>
-    const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+
+  <script type="text/javascript">
+    google.charts.load('current', {'packages':['table']});
+    google.charts.setOnLoadCallback(drawTable);
 
     function getQueryParam(param) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(param);
     }
 
-    async function fetchData() {
-      const namaPeserta = getQueryParam("nama");
-      if (!namaPeserta) {
-        document.getElementById("judul").innerHTML = "<p>Nama peserta tidak ditemukan.</p>";
+    function drawTable() {
+      const nama = getQueryParam("nama");
+      if (!nama) {
+        document.getElementById("table_div").innerHTML = "Nama peserta tidak ditemukan di URL.";
         return;
       }
 
-      document.getElementById("namaPeserta").textContent = namaPeserta;
+      // Update informasi di bagian atas
+      document.getElementById("judul").innerHTML = `
+        <div class="header">
+          <h2>KARTU TABUNGAN QURBAN TAHUN 2026</h2>
+          <p>Kp. Pasar Senen Desa Ciasihan Kec. Pamijahan</p>
+        </div>
+        <div class="info-row">
+          <div><strong>NAMA:</strong> ${nama}</div>
+          <div class="info-right">
+            <div><strong>Jumlah Dana Qurban</strong></div>
+            <div><strong>RP 3.000.000</strong></div>
+          </div>
+        </div>
+      `;
 
-      const bulanUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=LIST_BULAN&tq=SELECT B`;
-      const dataUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=DATABASE&tq=${encodeURIComponent("SELECT B, C, D, E, H WHERE B = '" + namaPeserta + "'")}`;
+      // Ambil data dari Google Sheet
+      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+      var sheetName = 'DATABASE';
+      var queryString = encodeURIComponent(`SELECT A, B, C, D, E, H WHERE B = '${nama}'`);
+      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
-      try {
-        const [bulanRes, dataRes] = await Promise.all([fetch(bulanUrl), fetch(dataUrl)]);
-        const bulanJson = JSON.parse((await bulanRes.text()).replace(/.*?({.*})/, '$1'));
-        const dataJson = JSON.parse((await dataRes.text()).replace(/.*?({.*})/, '$1'));
-
-        const bulanList = bulanJson.table.rows.map(row => row.c[0] ? row.c[0].v : '');
-        const records = dataJson.table.rows.map(row => ({
-          bulan: row.c[1]?.v || '',
-          jumlah: row.c[2]?.v || 0,
-          tanggal: row.c[3]?.f || '',
-          keterangan: row.c[4]?.v || ''
-        }));
-
-        let tableHTML = '';
-        let total = 0;
-
-        for (let i = 0; i < 12; i++) {
-          const bulan = bulanList[i] || `Bulan ${i+1}`;
-          const record = records.find(r => r.bulan?.toUpperCase() === bulan?.toUpperCase());
-          const ke = i + 1;
-          const jumlah = record ? record.jumlah : '';
-          const tanggal = record ? record.tanggal : '';
-          const keterangan = record ? record.keterangan : '';
-
-          if (jumlah) total += jumlah;
-
-          tableHTML += `
-            <tr>
-              <td>${ke}</td>
-              <td>${bulan}</td>
-              <td>${tanggal}</td>
-              <td class="right">${jumlah ? 'Rp ' + jumlah.toLocaleString('id-ID') : ''}</td>
-              <td>${keterangan}</td>
-            </tr>`;
+      var query = new google.visualization.Query(dataSourceUrl);
+      query.send(function(response) {
+        if (response.isError()) {
+          document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
+          return;
         }
 
-        tableHTML += `
-          <tr class="total-row">
-            <td colspan="3">TOTAL TABUNGAN</td>
-            <td class="right">Rp ${total.toLocaleString('id-ID')}</td>
-            <td></td>
-          </tr>`;
+        var data = response.getDataTable();
+        var table = new google.visualization.Table(document.getElementById('table_div'));
+        table.draw(data, {showRowNumber: true, width: '100%', height: 'auto'});
 
-        document.getElementById('tabel-body').innerHTML = tableHTML;
-      } catch (err) {
-        document.getElementById('tabel-body').innerHTML = `<tr><td colspan="5">Gagal memuat data.</td></tr>`;
-      }
+        // Menghitung total tabungan
+        let totalTabungan = 0;
+        for (let i = 0; i < data.getNumberOfRows(); i++) {
+          totalTabungan += data.getValue(i, 3);  // Kolom D berisi jumlah tabungan
+        }
+
+        // Menambahkan total tabungan
+        const totalTabunganDiv = document.createElement('div');
+        totalTabunganDiv.innerHTML = `<strong>TOTAL TABUNGAN: </strong> Rp ${totalTabungan.toLocaleString()}`;
+        document.getElementById("total_tabungan").appendChild(totalTabunganDiv);
+      });
     }
-
-    window.onload = fetchData;
   </script>
 </head>
 <body>
   <div class="container">
-    <h2>KARTU TABUNGAN QURBAN TAHUN 2026</h2>
-    <p>Kp.Pasar Senen Desa Ciasihan Kec. Pamijahan</p>
-
-    <div class="info" id="judul">
-      <div><strong>NAMA:</strong> <span id="namaPeserta"></span></div>
-      <div class="right">
-        <strong>Jumlah Dana Qurban</strong><br>
-        <strong>RP 3.000.000</strong>
-      </div>
+    <div id="judul"></div>
+    <div class="table-container">
+      <div id="table_div">Memuat data...</div>
+      <div id="total_tabungan"></div>
     </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Tabungan Ke</th>
-          <th>Bulan</th>
-          <th>Tanggal Pembayaran</th>
-          <th>Jumlah Tabungan</th>
-          <th>Keterangan</th>
-        </tr>
-      </thead>
-      <tbody id="tabel-body">
-        <tr><td colspan="5">Memuat data...</td></tr>
-      </tbody>
-    </table>
   </div>
 </body>
 </html>
