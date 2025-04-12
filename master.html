@@ -60,47 +60,13 @@
     google.charts.setOnLoadCallback(drawTable);
 
     function drawTable() {
-      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'DATABASE';
-      var queryString = encodeURIComponent("SELECT A, B, C, D, E, F, G, H");
-      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
+      const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+      const sheetName = 'DATABASE';
+      const queryString = encodeURIComponent("SELECT B, C, D, E, G, H"); // Tanpa kolom A & F
+      const dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
 
-      var query = new google.visualization.Query(dataSourceUrl);
+      const query = new google.visualization.Query(dataSourceUrl);
       query.send(function(response) {
         if (response.isError()) {
           document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
-          return;
-        }
-
-        var data = response.getDataTable();
-
-        // Ubah kolom G menjadi link
-        var colIndex = 6; // Kolom G
-        for (var i = 0; i < data.getNumberOfRows(); i++) {
-          var link = data.getValue(i, colIndex);
-          if (link) {
-            var htmlLink = `<a class="link-button" href="${link}" target="_blank">Lihat Bukti</a>`;
-            data.setValue(i, colIndex, htmlLink);
-          }
-        }
-
-        var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {
-          showRowNumber: true,
-          allowHtml: true,
-          width: '100%',
-          height: 'auto'
-        });
-      });
-    }
-  </script>
-</head>
-<body>
-  <div class="container">
-    <h2>DAFTAR PESERTA TABUNGAN QURBAN</h2>
-    <div class="table-container">
-      <div id="table_div">Memuat data...</div>
-    </div>
-  </div>
-</body>
-</html>
+          return
