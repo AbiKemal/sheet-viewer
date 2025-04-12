@@ -1,136 +1,59 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kartu Tabungan Qurban Tahun 2026</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f6f6f6;
-      color: #333;
-    }
+google.charts.load('current', {'packages':['table']});
+google.charts.setOnLoadCallback(drawTable);
 
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      margin-top: 30px;
-      border-radius: 8px;
-    }
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
 
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+function drawTable() {
+  const nama = getQueryParam("nama");
+  if (!nama) {
+    document.getElementById("table_div").innerHTML = "Nama peserta tidak ditemukan di URL.";
+    return;
+  }
 
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-      gap: 10px;
-    }
-
-    .info-row div {
-      flex: 1 1 45%;
-    }
-
-    .info-right {
-      text-align: right;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    @media (max-width: 600px) {
-      .info-row {
-        flex-direction: column;
-        text-align: left;
-      }
-      .info-right {
-        text-align: left;
-      }
-    }
-  </style>
-
-  <script type="text/javascript">
-    google.charts.load('current', {'packages':['table']});
-    google.charts.setOnLoadCallback(drawTable);
-
-    function getQueryParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param);
-    }
-
-    function drawTable() {
-      const nama = getQueryParam("nama");
-      if (!nama) {
-        document.getElementById("table_div").innerHTML = "Nama peserta tidak ditemukan di URL.";
-        return;
-      }
-
-      // Update informasi di bagian atas
-      document.getElementById("judul").innerHTML = `
-        <div class="header">
-          <h2>KARTU TABUNGAN QURBAN TAHUN 2026</h2>
-          <p>Kp. Pasar Senen Desa Ciasihan Kec. Pamijahan</p>
-        </div>
-        <div class="info-row">
-          <div><strong>NAMA:</strong> ${nama}</div>
-          <div class="info-right">
-            <div><strong>Jumlah Dana Qurban</strong></div>
-            <div><strong>RP 3.000.000</strong></div>
-          </div>
-        </div>
-      `;
-
-      // Ambil data dari Google Sheet
-      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'DATABASE';
-      var queryString = encodeURIComponent(`SELECT A, B, C, D, E, H WHERE B = '${nama}'`);
-      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
-
-      var query = new google.visualization.Query(dataSourceUrl);
-      query.send(function(response) {
-        if (response.isError()) {
-          document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
-          return;
-        }
-
-        var data = response.getDataTable();
-        var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {showRowNumber: true, width: '100%', height: 'auto'});
-
-        // Menghitung total tabungan
-        let totalTabungan = 0;
-        for (let i = 0; i < data.getNumberOfRows(); i++) {
-          totalTabungan += data.getValue(i, 3);  // Kolom D berisi jumlah tabungan
-        }
-
-        // Menambahkan total tabungan
-        const totalTabunganDiv = document.createElement('div');
-        totalTabunganDiv.innerHTML = `<strong>TOTAL TABUNGAN: </strong> Rp ${totalTabungan.toLocaleString()}`;
-        document.getElementById("total_tabungan").appendChild(totalTabunganDiv);
-      });
-    }
-  </script>
-</head>
-<body>
-  <div class="container">
-    <div id="judul"></div>
-    <div class="table-container">
-      <div id="table_div">Memuat data...</div>
-      <div id="total_tabungan"></div>
+  // Update informasi di bagian atas
+  document.getElementById("judul").innerHTML = `
+    <div class="header">
+      <h2>KARTU TABUNGAN QURBAN TAHUN 2026</h2>
+      <p>Kp. Pasar Senen Desa Ciasihan Kec. Pamijahan</p>
     </div>
-  </div>
-</body>
-</html>
+    <div class="info-row">
+      <div><strong>NAMA:</strong> ${nama}</div>
+      <div class="info-right">
+        <div><strong>Jumlah Dana Qurban</strong></div>
+        <div><strong>RP 3.000.000</strong></div>
+      </div>
+    </div>
+  `;
+
+  // Ambil data dari Google Sheet
+  var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+  var sheetName = 'DATABASE';
+  var queryString = encodeURIComponent(`SELECT A, B, C, D, E, H WHERE B = '${nama}'`);
+  var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
+
+  var query = new google.visualization.Query(dataSourceUrl);
+  query.send(function(response) {
+    if (response.isError()) {
+      document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
+      return;
+    }
+
+    var data = response.getDataTable();
+    var table = new google.visualization.Table(document.getElementById('table_div'));
+    table.draw(data, {showRowNumber: true, width: '100%', height: 'auto'});
+
+    // Menghitung total tabungan
+    let totalTabungan = 0;
+    for (let i = 0; i < data.getNumberOfRows(); i++) {
+      totalTabungan += data.getValue(i, 3);  // Kolom D berisi jumlah tabungan
+    }
+
+    // Menambahkan total tabungan
+    const totalTabunganDiv = document.createElement('div');
+    totalTabunganDiv.innerHTML = `<strong>TOTAL TABUNGAN: </strong> Rp ${totalTabungan.toLocaleString()}`;
+    document.getElementById("total_tabungan").appendChild(totalTabunganDiv);
+  });
+}
