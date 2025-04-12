@@ -40,25 +40,23 @@
       background-color: #e0e0e0;
     }
 
+    /* Media query untuk tampilan mobile, memastikan kolom tetap pada posisi yang benar */
     @media screen and (max-width: 600px) {
       table, thead, tbody, th, td, tr {
-        display: block;
-      }
-
-      tr {
-        margin-bottom: 1em;
+        display: table; /* Pastikan kolom tetap pada posisi tabel yang benar */
       }
 
       td {
-        padding-left: 50%;
-        position: relative;
+        padding: 8px; /* Perkecil padding sedikit untuk mobile */
       }
 
-      td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 10px;
-        font-weight: bold;
+      th, td {
+        font-size: 14px; /* Menurunkan ukuran font sedikit agar lebih nyaman dilihat pada perangkat mobile */
+      }
+
+      /* Jika di mobile, tampilkan data dalam urutan yang lebih compact */
+      .total-row {
+        font-size: 16px; /* Ukuran font total tabungan sedikit lebih besar */
       }
     }
   </style>
