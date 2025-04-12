@@ -25,7 +25,7 @@
         var html = '<ul>';
         for (var i = 0; i < data.getNumberOfRows(); i++) {
           var nama = data.getValue(i, 1); // Kolom B
-          html += `<li><a href="view.html?nama=${encodeURIComponent(nama)}">${data.getValue(i, 0)} - ${nama}</a></li>`;
+          html += `<li><a href="viewR.html?nama=${encodeURIComponent(nama)}">${data.getValue(i, 0)} - ${nama}</a></li>`;
         }
         html += '</ul>';
         document.getElementById("peserta_list").innerHTML = html;
