@@ -1,14 +1,41 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Master Data Qurban</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beranda - Qurban</title>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script type="text/javascript">
+    google.charts.load('current', {'packages':['table']});
+    google.charts.setOnLoadCallback(loadPesertaList);
 
+    function loadPesertaList() {
+      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
+      var sheetName = 'PESERTA_QURBAN';
+      var queryString = encodeURIComponent("SELECT A, B");
+
+      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
+
+      var query = new google.visualization.Query(dataSourceUrl);
+      query.send(function(response) {
+        if (response.isError()) {
+          document.getElementById("peserta_list").innerHTML = "Gagal memuat data peserta.";
+          return;
+        }
+
+        var data = response.getDataTable();
+        var html = '<ul>';
+        for (var i = 0; i < data.getNumberOfRows(); i++) {
+          var nama = data.getValue(i, 1); // Kolom B
+          html += `<li><a href="view.html?nama=${encodeURIComponent(nama)}">${data.getValue(i, 0)} - ${nama}</a></li>`;
+        }
+        html += '</ul>';
+        document.getElementById("peserta_list").innerHTML = html;
+      });
+    }
+  </script>
   <style>
+    /* Reset styling untuk tampilan */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -18,7 +45,7 @@
 
     h1, h2 {
       text-align: center;
-      color: #000; /* Header font color hitam */
+      color: #000; /* Mengubah warna header menjadi hitam */
     }
 
     nav {
@@ -37,180 +64,66 @@
       color: #0056b3;
     }
 
-    .controls {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .controls input,
-    .controls button {
-      padding: 6px 12px;
-      margin: 5px;
-      font-size: 14px;
-    }
-
-    .table-container {
-      overflow-x: auto;
-      width: 100%;
-    }
-
-    #total_amount {
-      text-align: center;
+    #peserta_list {
       margin-top: 20px;
-      font-weight: bold;
       font-size: 16px;
     }
 
+    #peserta_list ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #peserta_list li {
+      margin: 10px 0;
+    }
+
+    #peserta_list a {
+      text-decoration: none;
+      color: #007BFF;
+    }
+
+    #peserta_list a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive Design */
     @media screen and (max-width: 600px) {
       body {
         padding: 10px;
       }
 
       h1, h2 {
-        font-size: 22px;
+        font-size: 24px;
+      }
+
+      #peserta_list ul {
+        padding-left: 20px;
+      }
+
+      #peserta_list li {
+        font-size: 14px;
       }
 
       nav {
         font-size: 14px;
       }
 
-      .controls input,
-      .controls button {
-        width: 100%;
-        box-sizing: border-box;
+      nav a {
+        margin: 0 8px;
       }
     }
   </style>
-
-  <script type="text/javascript">
-    google.charts.load('current', {'packages':['table']});
-    google.charts.setOnLoadCallback(drawTable);
-
-    let originalData = null;
-
-    function drawTable() {
-      const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      const sheetName = 'DATABASE';
-      const query = encodeURIComponent("SELECT B, C, D, E, G");
-
-      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${query}`;
-      const dataQuery = new google.visualization.Query(url);
-
-      dataQuery.send(function(response) {
-        if (response.isError()) {
-          document.getElementById("table_div").innerHTML = "Gagal memuat data: " + response.getMessage();
-          return;
-        }
-
-        const rawData = response.getDataTable();
-        originalData = rawData;
-
-        const formattedData = new google.visualization.DataTable();
-        formattedData.addColumn('number', 'NO');
-        formattedData.addColumn('string', 'NAMA');
-        formattedData.addColumn('string', 'BULAN');
-        formattedData.addColumn('number', 'JUMLAH');
-        formattedData.addColumn('string', 'TGL INPUT');
-        formattedData.addColumn('string', 'BUKTI TRANSFER');
-
-        let totalJumlah = 0;
-        for (let i = 0; i < rawData.getNumberOfRows(); i++) {
-          const nama = rawData.getValue(i, 0);
-          const bulan = rawData.getValue(i, 1);
-          const jumlah = rawData.getValue(i, 2);
-          const tgl = rawData.getValue(i, 3);
-          const buktiUrl = rawData.getValue(i, 4);
-
-          totalJumlah += jumlah;
-
-          const linkHtml = `<a href="${buktiUrl}" target="_blank">Lihat Bukti</a>`;
-          formattedData.addRow([i + 1, nama, bulan, jumlah, tgl, linkHtml]);
-        }
-
-        const table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(formattedData, {allowHtml: true, showRowNumber: false, width: '100%', height: 'auto'});
-
-        document.getElementById("total_amount").innerText = `TOTAL SEMUA JUMLAH: Rp ${totalJumlah.toLocaleString()}`;
-      });
-    }
-
-    function filterNama() {
-      const keyword = document.getElementById("searchNama").value.toLowerCase();
-      const dataTable = originalData;
-
-      if (!dataTable) return;
-
-      const filteredData = new google.visualization.DataTable();
-      filteredData.addColumn('number', 'NO');
-      filteredData.addColumn('string', 'NAMA');
-      filteredData.addColumn('string', 'BULAN');
-      filteredData.addColumn('number', 'JUMLAH');
-      filteredData.addColumn('string', 'TGL INPUT');
-      filteredData.addColumn('string', 'BUKTI TRANSFER');
-
-      let total = 0;
-      let no = 1;
-      for (let i = 0; i < dataTable.getNumberOfRows(); i++) {
-        const nama = dataTable.getValue(i, 0);
-        if (nama.toLowerCase().includes(keyword)) {
-          const bulan = dataTable.getValue(i, 1);
-          const jumlah = dataTable.getValue(i, 2);
-          const tgl = dataTable.getValue(i, 3);
-          const buktiUrl = dataTable.getValue(i, 4);
-
-          total += jumlah;
-          const linkHtml = `<a href="${buktiUrl}" target="_blank">Lihat Bukti</a>`;
-          filteredData.addRow([no++, nama, bulan, jumlah, tgl, linkHtml]);
-        }
-      }
-
-      const table = new google.visualization.Table(document.getElementById('table_div'));
-      table.draw(filteredData, {allowHtml: true, showRowNumber: false, width: '100%', height: 'auto'});
-
-      document.getElementById("total_amount").innerText = `TOTAL SEMUA JUMLAH: Rp ${total.toLocaleString()}`;
-    }
-
-    function exportToExcel() {
-      if (!originalData) return;
-
-      const wb = XLSX.utils.book_new();
-      const wsData = [];
-
-      wsData.push(['NO', 'NAMA', 'BULAN', 'JUMLAH', 'TGL INPUT', 'BUKTI TRANSFER']);
-      for (let i = 0; i < originalData.getNumberOfRows(); i++) {
-        wsData.push([
-          i + 1,
-          originalData.getValue(i, 0),
-          originalData.getValue(i, 1),
-          originalData.getValue(i, 2),
-          originalData.getValue(i, 3),
-          originalData.getValue(i, 4)
-        ]);
-      }
-
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      XLSX.utils.book_append_sheet(wb, ws, 'MasterDataQurban');
-      XLSX.writeFile(wb, 'MasterDataQurban.xlsx');
-    }
-  </script>
 </head>
 <body>
-  <h1>Master Data Qurban</h1>
-
+  <h1>Selamat Datang di Halaman Qurban</h1>
+  
   <nav>
     <a href="index.html">Beranda</a> |
     <a href="master.html">Master Data</a>
   </nav>
 
-  <div class="controls">
-    <input type="text" id="searchNama" placeholder="Filter nama..." oninput="filterNama()" />
-    <button onclick="exportToExcel()">Ekspor ke Excel</button>
-  </div>
-
-  <div class="table-container">
-    <div id="table_div">Memuat data...</div>
-  </div>
-
-  <div id="total_amount">Total akan tampil di sini...</div>
+  <h2>Daftar Peserta Qurban</h2>
+  <div id="peserta_list">Memuat data...</div>
 </body>
 </html>
