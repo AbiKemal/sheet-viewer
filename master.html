@@ -32,12 +32,20 @@
     }
 
     th {
-      background-color: #007BFF;
-      color: white;
+      background-color: #e8f1ff;
+      color: #007BFF;
     }
 
     tr:nth-child(even) {
       background-color: #f9f9f9;
+    }
+
+    #total_div {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 16px;
+      text-align: right;
+      color: #333;
     }
 
     @media screen and (max-width: 600px) {
@@ -49,6 +57,7 @@
         position: sticky;
         top: 0;
         background-color: #007BFF;
+        color: white;
       }
 
       td {
@@ -62,12 +71,17 @@
         left: 10px;
         font-weight: bold;
       }
+
+      #total_div {
+        text-align: center;
+      }
     }
   </style>
 </head>
 <body>
   <h2>Data Tabungan Qurban</h2>
   <div id="table_div">Memuat data...</div>
+  <div id="total_div"></div>
 
   <script>
     google.charts.load('current', {'packages':['table']});
@@ -98,16 +112,19 @@
         newData.addColumn('string', 'BUKTI TRANSFER');
         newData.addColumn('string', 'KETERANGAN');
 
+        let totalJumlah = 0;
+
         for (let i = 0; i < data.getNumberOfRows(); i++) {
           const no = i + 1;
           const nama = data.getValue(i, 0);
           const bulan = data.getValue(i, 1);
-          const jumlah = data.getValue(i, 2);
+          const jumlah = data.getValue(i, 2) || 0;
           const tgl = data.getFormattedValue(i, 3);
           const buktiLink = data.getValue(i, 4);
           const keterangan = data.getValue(i, 5);
 
           const buktiHTML = `<a href="${buktiLink}" target="_blank">Lihat Bukti</a>`;
+          totalJumlah += jumlah;
 
           newData.addRow([no, nama, bulan, jumlah, tgl, buktiHTML, keterangan]);
         }
@@ -119,6 +136,8 @@
           height: 'auto',
           allowHtml: true
         });
+
+        document.getElementById('total_div').innerHTML = `TOTAL TABUNGAN: Rp ${totalJumlah.toLocaleString()}`;
       });
     }
   </script>
