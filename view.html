@@ -2,123 +2,119 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Data Peserta</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Detail Tabungan Qurban</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <style>
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: Arial, sans-serif;
+      padding: 1em;
       margin: 0;
-      padding: 0;
-      background-color: #f6f6f6;
+      background: #f4f4f4;
+    }
+
+    h2 {
+      text-align: center;
       color: #333;
     }
 
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      margin-top: 30px;
-      border-radius: 8px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      margin-top: 20px;
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
     }
 
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-      gap: 10px;
+    th {
+      background-color: #f0f0f0;
     }
 
-    .info-row div {
-      flex: 1 1 45%;
+    .total-row {
+      font-weight: bold;
+      background-color: #e0e0e0;
     }
 
-    .info-right {
-      text-align: right;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    @media (max-width: 600px) {
-      .info-row {
-        flex-direction: column;
-        text-align: left;
+    @media screen and (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
       }
-      .info-right {
-        text-align: left;
+
+      tr {
+        margin-bottom: 1em;
+      }
+
+      td {
+        padding-left: 50%;
+        position: relative;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        font-weight: bold;
       }
     }
   </style>
-
   <script type="text/javascript">
     google.charts.load('current', {'packages':['table']});
     google.charts.setOnLoadCallback(drawTable);
 
-    function getQueryParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param);
-    }
-
     function drawTable() {
-      const nama = getQueryParam("nama");
-      if (!nama) {
-        document.getElementById("table_div").innerHTML = "Nama peserta tidak ditemukan di URL.";
-        return;
-      }
+      const urlParams = new URLSearchParams(window.location.search);
+      const namaPeserta = urlParams.get('nama');  // Mendapatkan nama peserta dari URL
 
-      // Update informasi di bagian atas
-      document.getElementById("judul").innerHTML = `
-        <div class="header">
-          <h2>KARTU TABUNGAN QURBAN TAHUN 2026</h2>
-          <p>Kp. Pasar Senen Desa Ciasihan Kec. Pamijahan</p>
-        </div>
-        <div class="info-row">
-          <div><strong>NAMA:</strong> ${nama}</div>
-          <div class="info-right">
-            <div><strong>Jumlah Dana Qurban</strong></div>
-            <div><strong>RP 3.000.000</strong></div>
-          </div>
-        </div>
-      `;
+      const sheetUrl = `https://docs.google.com/spreadsheets/d/1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA/gviz/tq?sheet=HABIB&tq=` + encodeURIComponent(`SELECT A, B, C, D WHERE B = '${namaPeserta}'`);
 
-      // Ambil data dari Google Sheet
-      var sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
-      var sheetName = 'Sheet1';
-      var queryString = encodeURIComponent(`SELECT C, D, E WHERE B = '${nama}'`);
-      var dataSourceUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&headers=1&tq=${queryString}`;
-
-      var query = new google.visualization.Query(dataSourceUrl);
+      const query = new google.visualization.Query(sheetUrl);
       query.send(function(response) {
         if (response.isError()) {
-          document.getElementById("table_div").innerHTML = 'Gagal memuat data: ' + response.getMessage();
+          alert('Error mengambil data: ' + response.getMessage());
           return;
         }
 
-        var data = response.getDataTable();
-        var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {showRowNumber: true, width: '100%', height: 'auto'});
+        const data = response.getDataTable();
+        const container = document.getElementById('tabungan_detail');
+
+        let html = '<table><thead><tr><th>No</th><th>Bulan</th><th>Tanggal Pembayaran</th><th>Jumlah Tabungan</th></tr></thead><tbody>';
+        let totalTabungan = 0;
+
+        for (let i = 0; i < data.getNumberOfRows(); i++) {
+          const no = data.getValue(i, 0);
+          const bulan = data.getValue(i, 1);
+          const tglPembayaran = data.getValue(i, 2);
+          const jumlahTabungan = parseFloat(data.getValue(i, 3)) || 0;
+
+          totalTabungan += jumlahTabungan;
+
+          html += `<tr>
+            <td data-label="No">${no}</td>
+            <td data-label="Bulan">${bulan}</td>
+            <td data-label="Tanggal Pembayaran">${tglPembayaran}</td>
+            <td data-label="Jumlah Tabungan">${jumlahTabungan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+          </tr>`;
+        }
+
+        // Menambahkan total tabungan
+        html += `<tr class="total-row">
+          <td colspan="3" style="text-align: right;">Total Tabungan:</td>
+          <td>${totalTabungan.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
+        </tr>`;
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
       });
     }
   </script>
 </head>
 <body>
-  <div class="container">
-    <div id="judul"></div>
-    <div class="table-container">
-      <div id="table_div">Memuat data...</div>
-    </div>
-  </div>
+  <h2>Kartu Tabungan Qurban Tahun 2026</h2>
+  <div id="tabungan_detail">Memuat data...</div>
 </body>
 </html>
