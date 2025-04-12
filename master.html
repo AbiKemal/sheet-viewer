@@ -76,12 +76,19 @@
       #total_div {
         text-align: center;
       }
+      
+    .table-container {
+      overflow-x: auto;
+      width: 100%;
+    }    
     }
   </style>
 </head>
 <body>
   <h2>Data Tabungan Qurban</h2>
-  <div id="table_div">Memuat data...</div>
+  <div class="table-container">
+    <div id="table_div">Memuat data...</div>
+  </div>
   <div id="total_div"></div>
 
   <script>
