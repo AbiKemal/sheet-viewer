@@ -83,27 +83,12 @@
     }
 
     @media screen and (max-width: 600px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
+      .container {
+        overflow-x: scroll;
       }
 
-      th {
-        position: sticky;
-        top: 0;
-        background-color: #007BFF;
-        color: white;
-      }
-
-      td {
-        padding-left: 50%;
-        position: relative;
-      }
-
-      td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 10px;
-        font-weight: bold;
+      table {
+        width: 1000px;
       }
 
       #total_div {
@@ -132,6 +117,8 @@
     google.charts.load('current', {'packages':['table']});
     google.charts.setOnLoadCallback(drawTable);
 
+    let originalData = null;
+
     function drawTable() {
       const sheetId = '1aNWfGYIqARaSmDXl0eqJ5Sy6htOgBgMTIZC1SlZA0vA';
       const sheetName = 'DATABASE';
@@ -146,61 +133,53 @@
           return;
         }
 
-        const data = response.getDataTable();
-        const newData = new google.visualization.DataTable();
-
-        newData.addColumn('number', 'NO');
-        newData.addColumn('string', 'NAMA');
-        newData.addColumn('string', 'BULAN');
-        newData.addColumn('number', 'JUMLAH');
-        newData.addColumn('string', 'TGL INPUT');
-        newData.addColumn('string', 'BUKTI TRANSFER');
-        newData.addColumn('string', 'KETERANGAN');
-
-        let totalJumlah = 0;
-
-        for (let i = 0; i < data.getNumberOfRows(); i++) {
-          const no = i + 1;
-          const nama = data.getValue(i, 0);
-          const bulan = data.getValue(i, 1);
-          const jumlah = data.getValue(i, 2) || 0;
-          const tgl = data.getFormattedValue(i, 3);
-          const buktiLink = data.getValue(i, 4);
-          const keterangan = data.getValue(i, 5);
-
-          const buktiHTML = `<a href="${buktiLink}" target="_blank">Lihat Bukti</a>`;
-          totalJumlah += jumlah;
-
-          newData.addRow([no, nama, bulan, jumlah, tgl, buktiHTML, keterangan]);
-        }
-
-        const table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(newData, {
-          showRowNumber: false,
-          width: '100%',
-          height: 'auto',
-          allowHtml: true
-        });
-
-        document.getElementById('total_div').innerHTML = `TOTAL TABUNGAN: Rp ${totalJumlah.toLocaleString()}`;
+        originalData = response.getDataTable();
+        renderFilteredTable('');
       });
     }
 
-    function filterData() {
-      const input = document.getElementById('filterNama').value.toLowerCase();
-      const rows = document.querySelectorAll('#table_div .google-visualization-table-tr');
+    function renderFilteredTable(filterText) {
+      const filteredData = new google.visualization.DataTable();
+      filteredData.addColumn('number', 'NO');
+      filteredData.addColumn('string', 'NAMA');
+      filteredData.addColumn('string', 'BULAN');
+      filteredData.addColumn('number', 'JUMLAH');
+      filteredData.addColumn('string', 'TGL INPUT');
+      filteredData.addColumn('string', 'BUKTI TRANSFER');
+      filteredData.addColumn('string', 'KETERANGAN');
 
-      rows.forEach(row => {
-        const nameCell = row.querySelector('td:nth-child(2)');
-        if (nameCell) {
-          const name = nameCell.textContent || nameCell.innerText;
-          if (name.toLowerCase().includes(input)) {
-            row.style.display = '';
-          } else {
-            row.style.display = 'none';
-          }
+      let totalJumlah = 0;
+      let no = 1;
+
+      for (let i = 0; i < originalData.getNumberOfRows(); i++) {
+        const nama = originalData.getValue(i, 0);
+        const bulan = originalData.getValue(i, 1);
+        const jumlah = originalData.getValue(i, 2) || 0;
+        const tgl = originalData.getFormattedValue(i, 3);
+        const buktiLink = originalData.getValue(i, 4);
+        const keterangan = originalData.getValue(i, 5);
+
+        if (nama.toLowerCase().includes(filterText.toLowerCase())) {
+          const buktiHTML = `<a href="${buktiLink}" target="_blank">Lihat Bukti</a>`;
+          filteredData.addRow([no++, nama, bulan, jumlah, tgl, buktiHTML, keterangan]);
+          totalJumlah += jumlah;
         }
+      }
+
+      const table = new google.visualization.Table(document.getElementById('table_div'));
+      table.draw(filteredData, {
+        showRowNumber: false,
+        width: '100%',
+        height: 'auto',
+        allowHtml: true
       });
+
+      document.getElementById('total_div').innerHTML = `TOTAL TABUNGAN: Rp ${totalJumlah.toLocaleString()}`;
+    }
+
+    function filterData() {
+      const input = document.getElementById('filterNama').value;
+      renderFilteredTable(input);
     }
 
     function exportToExcel() {
