@@ -36,15 +36,30 @@
   </script>
   <style>
     /* Reset styling untuk tampilan */
-
+    /*
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
       background-color: #f5f5f5;
     } 
-
-
+  */
+      body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+      .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      margin-top: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
     h1, h2 {
       text-align: center;
       color: #333;
@@ -118,6 +133,7 @@
   </style>
 </head>
 <body>
+  <div class="container">
   <h1>Selamat Datang di Halaman Qurban</h1>
   
   <nav>
@@ -129,5 +145,6 @@
   <h2>Daftar Peserta Qurban</h2>
   <div id="peserta_list">Memuat data...</div>
     </div>
+  </div>
 </body>
 </html>
